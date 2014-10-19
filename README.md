@@ -58,5 +58,5 @@ rm ~/.heroku/completion*
 
 [![RSS](https://stefansundin.github.io/img/feed.png) Release feed](https://github.com/stefansundin/heroku-bash-completion/releases.atom)
 
-**0.1** - 2014-10-18 - [diff](https://github.com/stefansundin/heroku-bash-completion/compare/59b6ca...v0.1):
+**0.1** - 2014-10-18 - [diff](https://github.com/stefansundin/heroku-bash-completion/compare/4db85e...v0.1):
 - First release.
