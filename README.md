@@ -7,7 +7,7 @@ The plugin generates the list from the heroku help commands, so it should stay u
 **Only tested on Mac.**
 
 
-### Prerequisites:
+### Prerequisites
 Install `bash-completion` and add it to your `.bash_profile` before you install this.
 
 ```bash
@@ -15,7 +15,7 @@ brew install bash-completion
 ```
 
 
-### Installation:
+### Install
 
 ```bash
 heroku plugins:install git://github.com/stefansundin/heroku-bash-completion.git
@@ -39,14 +39,14 @@ heroku completion:version
 When you install new plugins or upgrade to a new version of the heroku toolbelt, run `bash completion:clean` to regenerate the list of commands.
 
 
-### Updating
+### Update
 
 ```bash
 heroku plugins:update heroku-bash-completion
 ```
 
 
-### Uninstalling
+### Uninstall
 
 ```bash
 heroku plugins:uninstall heroku-bash-completion
