@@ -21,7 +21,7 @@ class Heroku::Command::Completion < Heroku::Command::Base
   # source "$(heroku completion:init)"
   #
   def init
-    puts __FILE__
+    puts File.expand_path("#{__FILE__}/../../../../../heroku-completion.bash")
   end
 
   # completion:version
@@ -38,9 +38,9 @@ class Heroku::Command::Completion < Heroku::Command::Base
   #
   def clean
     puts "Deleting ~/.heroku/{completion,completion-apps,completion-rake}"
-    File.delete(File.expand_path("~/.heroku/completion"))
-    File.delete(File.expand_path("~/.heroku/completion-apps"))
-    File.delete(File.expand_path("~/.heroku/completion-rake"))
+    File.delete(File.expand_path("~/.heroku/completion")) rescue nil
+    File.delete(File.expand_path("~/.heroku/completion-apps")) rescue nil
+    File.delete(File.expand_path("~/.heroku/completion-rake")) rescue nil
   end
 
 end
