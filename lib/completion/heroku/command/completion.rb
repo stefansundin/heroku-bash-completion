@@ -24,12 +24,14 @@ class Heroku::Command::Completion < Heroku::Command::Base
     puts File.expand_path("#{__FILE__}/../../../../../heroku-completion.bash")
   end
 
-  # completion:version
+  # completion:gen
   #
-  # prints version of plugin (v0.1)
+  # generate completion data
   #
-  def version
-    puts "v0.1"
+  def gen
+    clean
+    %x( bash -lic _heroku_commands )
+    %x( bash -lic _heroku_apps )
   end
 
   # completion:clean
@@ -41,6 +43,14 @@ class Heroku::Command::Completion < Heroku::Command::Base
     File.delete(File.expand_path("~/.heroku/completion")) rescue nil
     File.delete(File.expand_path("~/.heroku/completion-apps")) rescue nil
     File.delete(File.expand_path("~/.heroku/completion-rake")) rescue nil
+  end
+
+  # completion:version
+  #
+  # prints version of plugin (v0.1)
+  #
+  def version
+    puts "v0.1"
   end
 
 end

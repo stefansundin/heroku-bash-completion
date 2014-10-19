@@ -21,10 +21,6 @@ _heroku_complete() {
 }
 
 _heroku_commands() {
-  # The echo is needed to squash the readline support in the Ruby interpreter that kills bash completion results
-  # And... since this is slow, we're going to cache the result for a day.
-  # if [[ ! -f ~/.heroku/completion || `find "$HOME/.heroku" -name completion -mmin +1440` ]]; then
-
   if [[ ! -f ~/.heroku/completion ]]; then
     >&2 echo -e "\nLoading completion data, this may take a minute."
 
@@ -64,8 +60,7 @@ _heroku_apps() {
   cat ~/.heroku/completion-apps
 }
 
-_heroku_apps_short()
-{
+_heroku_apps_short() {
   echo "$(_heroku_apps)" | awk '{{print "-a"$1}}'
 }
 
@@ -73,14 +68,8 @@ _heroku_main_commands() {
   echo "$(_heroku_commands)" | grep -v ':'
 }
 
-# _heroku_sub_commands() {
-#   echo "$(_heroku_commands)" | grep ':'
-# }
-
 _heroku_subcommands_regex() {
   echo "$(_heroku_commands)" | grep -v "help|version" | tr "\n" "|"
-  # echo "$(_heroku_main_commands)" | grep -v "help|version" | tr "\n" "|"
-  # echo "$(_heroku_main_commands)" | egrep -v "help|version" | tr "\n" "|"
 }
 
 _heroku_remotes() {
