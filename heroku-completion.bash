@@ -4,9 +4,6 @@
 # https://github.com/daveyeu/heroku-bash-completion/blob/master/heroku-bash-completion.sh
 # https://github.com/rafmagana/heroku_bash_completion/blob/master/heroku_bash_completion.sh
 
-# TODO:
-# Regenerate .heroku/completion when heroku version changes or plugin is installed
-
 # If you get errors about _split_longopt or __ltrim_colon_completions, be sure to install bash-completion.
 # brew install bash-completion
 # And put this in .bash_profile
@@ -28,6 +25,7 @@ _heroku_commands() {
     local subcommands=()
 
     for i in "${commands[@]}"; do
+      [[ "$i" == "help" ]] && continue
       >&2 echo "Loading subcommands for $i."
       subcommands+=(`heroku help "$i" | grep '#' | grep -v '-' | awk 'NF { print $1; }'`)
     done
@@ -35,7 +33,7 @@ _heroku_commands() {
     # Concatenate commands and subcommands
     cmds=( "${commands[@]}" "${subcommands[@]}" )
 
-    # Delete deprecated commands from the list, most no longer even works.
+    # Delete deprecated commands, most no longer even works
     delete=(run:console run:rake)
     for del in ${delete[@]}
     do
@@ -69,7 +67,7 @@ _heroku_main_commands() {
 }
 
 _heroku_subcommands_regex() {
-  echo "$(_heroku_commands)" | grep -v "help|version" | tr "\n" "|"
+  echo "$(_heroku_commands)" | tr "\n" "|"
 }
 
 _heroku_remotes() {
@@ -88,7 +86,7 @@ _rake_tasks() {
     >&2 echo -e "\nLoading list of rake tasks, this will take a few seconds."
     echo "$gitroot: `rake -s -T 2>/dev/null | awk '{{print $2}}' | tr "\n" " "`" >> ~/.heroku/completion-rake
   fi
-  cat ~/.heroku/completion-rake | grep "$gitroot:" | cut -d' ' -f2-
+  cat ~/.heroku/completion-rake | grep "$gitroot:" | cut -d':' -f2-
 }
 
 _heroku() {
@@ -121,6 +119,11 @@ _heroku() {
       # e.g. heroku run rake db:seed
       _heroku_complete "$(_rake_tasks)"
       __ltrim_colon_completions "$cur"
+      return 0
+      ;;
+    plugins:update|plugins:uninstall)
+      local dir=$(dirname $( dirname "${BASH_SOURCE[0]}" ))
+      _heroku_complete "$(ls "$dir")"
       return 0
       ;;
   esac

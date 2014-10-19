@@ -21,22 +21,29 @@ brew install bash-completion
 heroku plugins:install git://github.com/stefansundin/heroku-bash-completion.git
 ```
 
-Edit your `.bash_profile` and add:
+Run `heroku completion:init` to get the command to put in `.bash_profile`, usually:
 
 ```bash
-source "$(heroku completion:init)"
+source "$HOME/.heroku/plugins/heroku-bash-completion/heroku-completion.bash"
 ```
+
+Open a new terminal for the completion to take effect, or run the `source` command directly. The first time you use it, it will generate a list of commands that it caches in your `~/.heroku` directory. The first time you tab `--app` or `-a`, it will fetch a list of your apps. You can generate new lists by running `heroku completion:gen`. Rake tasks are also cached, e.g. `heroku run rake ...`. Heroku plugins are also completed, but not cached anywhere.
+
+When you install new plugins or upgrade to a new version of the heroku toolbelt, run `heroku completion:gen` to update the cached list of commands. You can run `heroku completion:apps` to only generate a new list of apps.
+
+It might be convenient to set `heroku completion:apps` to run as a cron job to periodically update the list, or you can have it run when you login.
 
 
 ### Usage
 
 ```bash
 heroku completion
+heroku completion:init
+heroku completion:gen
+heroku completion:apps
 heroku completion:clean
 heroku completion:version
 ```
-
-When you install new plugins or upgrade to a new version of the heroku toolbelt, run `bash completion:clean` to regenerate the list of commands.
 
 
 ### Update

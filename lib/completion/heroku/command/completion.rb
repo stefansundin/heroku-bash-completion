@@ -16,12 +16,12 @@ class Heroku::Command::Completion < Heroku::Command::Base
 
   # completion:init
   #
-  # prints path to the file that initializes the bash completion
-  # put this in your .bash_profile:
-  # source "$(heroku completion:init)"
+  # prints command to put in your .bash_profile, usually:
+  # source "$HOME/.heroku/plugins/heroku-bash-completion/heroku-completion.bash"
   #
   def init
-    puts File.expand_path("#{__FILE__}/../../../../../heroku-completion.bash")
+    path = File.expand_path("#{__FILE__}/../../../../../heroku-completion.bash")
+    puts "source \"#{path}\""
   end
 
   # completion:gen
@@ -34,6 +34,15 @@ class Heroku::Command::Completion < Heroku::Command::Base
     %x( bash -lic _heroku_apps )
   end
 
+  # completion:apps
+  #
+  # generate apps completion data
+  #
+  def apps
+    File.delete(File.expand_path("~/.heroku/completion-apps")) rescue nil
+    %x( bash -lic _heroku_apps )
+  end
+
   # completion:clean
   #
   # reset command, apps and rake cache
@@ -43,6 +52,14 @@ class Heroku::Command::Completion < Heroku::Command::Base
     File.delete(File.expand_path("~/.heroku/completion")) rescue nil
     File.delete(File.expand_path("~/.heroku/completion-apps")) rescue nil
     File.delete(File.expand_path("~/.heroku/completion-rake")) rescue nil
+  end
+
+  # completion:web
+  #
+  # opens the website https://github.com/stefansundin/heroku-bash-completion
+  #
+  def web
+    %x( open https://github.com/stefansundin/heroku-bash-completion )
   end
 
   # completion:version
