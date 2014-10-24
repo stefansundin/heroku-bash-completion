@@ -56,14 +56,28 @@ heroku plugins:update heroku-bash-completion
 ### Uninstall
 
 ```bash
+heroku completion:clean
 heroku plugins:uninstall heroku-bash-completion
-rm ~/.heroku/completion*
 ```
+
+Also remove the line you added to `.bash_profile`.
+
+
+# What's not autocompleted
+- `heroku orgs`.
+- `heroku certs -e` endpoints.
+- `heroku addons`.
+
 
 
 # Changelog
 
 [![RSS](https://stefansundin.github.io/img/feed.png) Release feed](https://github.com/stefansundin/heroku-bash-completion/releases.atom)
+
+**0.2** - 2014-10-23 - [diff](https://github.com/stefansundin/heroku-bash-completion/compare/v0.1...v0.2):
+- Fixed some subcommands not being included.
+- Added support for switches.
+- Moved temp files to plugin directory.
 
 **0.1** - 2014-10-18 - [diff](https://github.com/stefansundin/heroku-bash-completion/compare/4db85e...v0.1):
 - First release.
