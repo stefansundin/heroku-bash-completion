@@ -14,6 +14,7 @@ _heroku_data() {
     >&2 echo -e "\nLoading completion data, this may take a minute."
 
     # Touch autoupdate.last to prevent heroku from trying to check for updates and thus ruining our processing
+    mkdir ~/.heroku 2> /dev/null
     touch ~/.heroku/autoupdate.last
 
     local commands_temp=( $(heroku help | grep '#' | awk '{ print $1 }') )
@@ -41,9 +42,13 @@ _heroku_data() {
         commands+=( "$(echo $s ${switches[*]})" ) # echo removes trailing spaces
       done
     done
+    
+    # Add secret shortcuts
+    # commands+=(login logout create destroy)
 
     # Write .heroku/completion
     ( IFS=$'\n'; echo "${commands[*]}" > ~/.heroku/completion )
+    >&2 echo -e "Done! Run \`heroku completion:gen\` if you need to regenerate this data (e.g. if you update heroku or install plugins)."
   fi
   cat ~/.heroku/completion
 }
@@ -78,7 +83,7 @@ _heroku_switches() {
 
 _heroku_subcommands_regex() {
   # echo "$(_heroku_commands)" | tr "\n" "|" | sed 's/\|$//'
-  _heroku_commands | tr "\n" "|" | sed 's/\|$//'
+  _heroku_commands | tr "\n" "|" | sed 's/|$//'
 }
 
 _heroku_remotes() {
@@ -114,7 +119,7 @@ _heroku_rake_tasks() {
 _heroku() {
   COMPREPLY=()
   local cur prev split=false
-  _get_comp_words_by_ref cur prev
+  _get_comp_words_by_ref -n : cur prev
   _split_longopt && split=true
 
   case $prev in
