@@ -9,13 +9,17 @@ _heroku_complete() {
   COMPREPLY=( $( compgen -W "$1" -- "$cur" ))
 }
 
+_heroku_touch() {
+  # Touch autoupdate.last to prevent heroku from trying to check for updates and thus ruining our processing
+  mkdir ~/.heroku 2> /dev/null
+  touch ~/.heroku/autoupdate.last
+}
+
 _heroku_data() {
   if [[ ! -f ~/.heroku/completion ]]; then
     >&2 echo -e "\nLoading completion data, this may take a minute."
 
-    # Touch autoupdate.last to prevent heroku from trying to check for updates and thus ruining our processing
-    mkdir ~/.heroku 2> /dev/null
-    touch ~/.heroku/autoupdate.last
+    _heroku_touch
 
     local commands_temp=( $(heroku help | grep '#' | awk '{ print $1 }') )
     local commands=()
@@ -25,15 +29,15 @@ _heroku_data() {
 
       >&2 echo "Loading commands and switches for $c."
       local help=$(heroku help "$c" | grep '#' | cut -d'#' -f1)
-      local subcommands=( $(echo "$help" | grep -v '-' | awk '{ print $1 }') )
+      local subcommands=( $(echo "$help" | grep '^  ' | grep -v ' -' | awk '{ print $1 }') )
       local switches=( $(echo "$help" | grep -oE -- '[ ,]--?[a-zA-Z\-]+' | tr -d ' ,' | uniq | grep -ve '^\(--app\|-a\|-r\|--remote\)$') )
       commands+=( "$(echo $c ${switches[*]})" ) # echo removes trailing spaces
 
       # Loop through subcommands to look for switches
       for s in "${subcommands[@]}"; do
         # Fix bugs in documentation
-        [[ $s == feature:enable ]] && s="features:enable"
-        [[ $s == 2fa:disable ]]    && s="twofactor:disable"
+        # [[ $s == feature:enable ]] && s="features:enable"
+        # [[ $s == 2fa:disable ]]    && s="twofactor:disable"
         # Skip deprecated commands
         [[ $s == run:console ]]    && continue
         [[ $s == run:rake ]]       && continue
@@ -42,8 +46,9 @@ _heroku_data() {
         commands+=( "$(echo $s ${switches[*]})" ) # echo removes trailing spaces
       done
     done
-    
+
     # Add secret shortcuts
+    commands+=( help )
     # commands+=(login logout create destroy)
 
     # Write .heroku/completion
@@ -56,6 +61,7 @@ _heroku_data() {
 _heroku_apps() {
   if [[ ! -f ~/.heroku/completion-apps ]]; then
     >&2 echo -e "\nLoading list of apps, this will take a few seconds."
+    _heroku_touch
     heroku apps | grep -v '=' | cut -d' ' -f1 | awk 'NF' > ~/.heroku/completion-apps
   fi
   cat ~/.heroku/completion-apps
@@ -187,16 +193,19 @@ _heroku() {
   elif [[ $cur =~ ^(-r) ]]; then
     _heroku_complete "$(_heroku_remotes_short)"
   elif [[ $cur =~ ^($(_heroku_subcommands_regex)) ]]; then
+    # complete -o nospace
+    compopt +o nospace
     _heroku_complete "$(_heroku_commands)"
   elif [[ (($COMP_CWORD > 1)) && ${COMP_WORDS[1]} != help ]]; then
     _heroku_complete "$(_heroku_switches "${COMP_WORDS[1]}") -a --app -r --remote"
   else
+    compopt -o nospace #this will cause problems on mac I think?
     _heroku_complete "$(_heroku_main_commands)"
   fi
   __ltrim_colon_completions "$cur"
   return 0
 }
 
-# Use the commented version if you want spaces to be added, but this doesn't allow you to autocomplete the colon for subcommands
-complete -o nospace -F _heroku heroku
-# complete -F _heroku heroku
+# Use the first version if you prefer spaces to never be added
+# complete -o nospace -F _heroku heroku
+complete -F _heroku heroku
