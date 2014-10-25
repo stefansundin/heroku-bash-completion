@@ -4,7 +4,7 @@ This lets you use tab to autocomplete your `heroku` commands. Instant bliss. :sp
 
 The plugin generates the list from the heroku help commands, so it should stay up to date with new commands. Your app names and git remotes are also autocompleted.
 
-**Only tested on Mac.**
+**Tested on Mac and Ubuntu.**
 
 
 ### Prerequisites
