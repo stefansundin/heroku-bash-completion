@@ -67,7 +67,7 @@ Also remove the line you added to `.bash_profile`.
 - `heroku orgs`.
 - `heroku certs -e` endpoints.
 - `heroku addons`.
-
+- Shortcuts such as `login`, `logout`, `join`, etc.
 
 
 # Changelog
