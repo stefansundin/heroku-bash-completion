@@ -39,7 +39,7 @@ class Heroku::Command::Completion < Heroku::Command::Base
   # generate apps completion data
   #
   def apps
-    File.delete(File.expand_path("~/.heroku/completion-apps")) rescue nil
+    File.delete("#{data_path}/completion-apps.txt") rescue nil
     %x( bash -lic _heroku_apps )
   end
 
@@ -48,10 +48,10 @@ class Heroku::Command::Completion < Heroku::Command::Base
   # reset command, apps and rake cache
   #
   def clean
-    puts "Deleting ~/.heroku/{completion,completion-apps,completion-rake}"
-    File.delete(File.expand_path("~/.heroku/completion")) rescue nil
-    File.delete(File.expand_path("~/.heroku/completion-apps")) rescue nil
-    File.delete(File.expand_path("~/.heroku/completion-rake")) rescue nil
+    puts "Deleting files from ~/.heroku/heroku-bash-completion/data/"
+    File.delete("#{data_path}/completion.txt") rescue nil
+    File.delete("#{data_path}/completion-apps.txt") rescue nil
+    File.delete("#{data_path}/completion-rake.txt") rescue nil
   end
 
   # completion:web
@@ -64,10 +64,16 @@ class Heroku::Command::Completion < Heroku::Command::Base
 
   # completion:version
   #
-  # prints version of plugin (v0.1)
+  # prints version of plugin (v0.2)
   #
   def version
-    puts "v0.1"
+    puts "v0.2"
+  end
+
+private
+
+  def data_path
+    File.expand_path("#{__FILE__}/../../../../../data/")
   end
 
 end

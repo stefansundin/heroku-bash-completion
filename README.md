@@ -63,10 +63,22 @@ heroku plugins:uninstall heroku-bash-completion
 Also remove the line you added to `.bash_profile`.
 
 
-# What's not autocompleted
+### What's autocompleted
+
+- Commands and their switches (that's visible in their help pages).
+- Apps and remotes.
+- Rake tasks.
+- Values of various standard switches.
+
+If you develop a plugin and want to have it autocompleted, make sure you follow the same syntax in your help pages as the official commands.
+
+
+### What's not autocompleted
+
 - `heroku orgs`.
-- `heroku certs -e` endpoints.
+- `heroku features`.
 - `heroku addons`.
+- `heroku certs -e`.
 - Shortcuts such as `login`, `logout`, `join`, etc.
 
 

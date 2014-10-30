@@ -1,0 +1,4 @@
+This directory will contain data about what commands you have for autocompletion purposes.
+You can delete the files for them to re-generate the next time the data is needed.
+Or run `heroku completion:gen`.
+Run `heroku completion:apps` to only regenerate apps cache.

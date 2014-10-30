@@ -5,8 +5,16 @@
 # https://github.com/daveyeu/heroku-bash-completion/blob/master/heroku-bash-completion.sh
 # https://github.com/rafmagana/heroku_bash_completion/blob/master/heroku_bash_completion.sh
 
+# echo $COMP_WORDBREAKS
+# Mac: "'><=;|&(:
+# Linux:
+
 _heroku_complete() {
   COMPREPLY=( $( compgen -W "$1" -- "$cur" ))
+}
+
+_heroku_opt() {
+  COMPREPLY=( $( compgen -W "$1" -P "$opt" -- "$val" ))
 }
 
 _heroku_touch() {
@@ -16,16 +24,16 @@ _heroku_touch() {
 }
 
 _heroku_data() {
-  if [[ ! -f ~/.heroku/completion ]]; then
+  local fn=$(_heroku_plugin_path)/data/completion.txt
+  if [[ ! -f "$fn" ]]; then
     >&2 echo -e "\nLoading completion data, this may take a minute."
-
     _heroku_touch
 
     local commands_temp=( $(heroku help | grep '#' | awk '{ print $1 }') )
     local commands=()
 
     for c in "${commands_temp[@]}"; do
-      [[ $c == help ]] && continue
+      [[ $c == help ]] && continue # skip help because it has help for non-existant commands
 
       >&2 echo "Loading commands and switches for $c."
       local help=$(heroku help "$c" | grep '#' | cut -d'#' -f1)
@@ -36,8 +44,8 @@ _heroku_data() {
       # Loop through subcommands to look for switches
       for s in "${subcommands[@]}"; do
         # Fix bugs in documentation
-        # [[ $s == feature:enable ]] && s="features:enable"
-        # [[ $s == 2fa:disable ]]    && s="twofactor:disable"
+        [[ $s == feature:enable ]] && s="features:enable"
+        [[ $s == 2fa:disable ]]    && s="twofactor:disable"
         # Skip deprecated commands
         [[ $s == run:console ]]    && continue
         [[ $s == run:rake ]]       && continue
@@ -48,47 +56,44 @@ _heroku_data() {
     done
 
     # Add secret shortcuts
-    commands+=( help )
+    commands+=( help ) # add help because we skipped it above
     # commands+=(login logout create destroy)
 
     # Write .heroku/completion
-    ( IFS=$'\n'; echo "${commands[*]}" > ~/.heroku/completion )
+    ( IFS=$'\n'; echo "${commands[*]}" > "$fn" )
     >&2 echo -e "Done! Run \`heroku completion:gen\` if you need to regenerate this data (e.g. if you update heroku or install plugins)."
   fi
-  cat ~/.heroku/completion
+  cat "$fn"
 }
 
 _heroku_apps() {
-  if [[ ! -f ~/.heroku/completion-apps ]]; then
+  local fn=$(_heroku_plugin_path)/data/completion-apps.txt
+  if [[ ! -f "$fn" ]]; then
     >&2 echo -e "\nLoading list of apps, this will take a few seconds."
     _heroku_touch
-    heroku apps | grep -v '=' | cut -d' ' -f1 | awk 'NF' > ~/.heroku/completion-apps
+    heroku apps | grep -v '=' | cut -d' ' -f1 | awk 'NF' > "$fn"
+    >&2 echo -e "Run \`heroku completion:apps\` when you get access to new apps."
   fi
-  cat ~/.heroku/completion-apps
+  cat "$fn"
 }
 
 _heroku_apps_short() {
-  # echo "$(_heroku_apps)" | awk '{ print "-a"$1 }'
   _heroku_apps | awk '{ print "-a"$1 }'
 }
 
 _heroku_commands() {
-  # echo "$(_heroku_data)" | cut -d' ' -f1
   _heroku_data | cut -d' ' -f1
 }
 
 _heroku_main_commands() {
-  # echo "$(_heroku_commands)" | grep -v ':'
   _heroku_commands | grep -v ':'
 }
 
 _heroku_switches() {
-  # echo "$(_heroku_data)" | grep -e "^$1 " | cut -d' ' -f2-
   _heroku_data | grep -e "^$1 " | cut -d' ' -f2-
 }
 
 _heroku_subcommands_regex() {
-  # echo "$(_heroku_commands)" | tr "\n" "|" | sed 's/\|$//'
   _heroku_commands | tr "\n" "|" | sed 's/|$//'
 }
 
@@ -98,7 +103,6 @@ _heroku_remotes() {
 }
 
 _heroku_remotes_short() {
-  # echo "$(_heroku_remotes)" | awk '{ print "-r"$1 }'
   _heroku_remotes | awk '{ print "-r"$1 }'
 }
 
@@ -109,17 +113,22 @@ _heroku_gitroot() {
 }
 
 _heroku_rake_tasks() {
+  local fn=$(_heroku_plugin_path)/data/completion-rake.txt
   local gitroot="$(_heroku_gitroot)"
-  if [[ ! -f ~/.heroku/completion-rake || $(cat ~/.heroku/completion-rake | grep "$gitroot:") == "" ]]; then
+  if [[ ! -f "$fn" || $(cat "$fn" | grep "$gitroot:") == "" ]]; then
     >&2 echo -e "\nLoading list of rake tasks, this will take a few seconds."
     local tasks=$(rake -s -T 2>/dev/null | awk '{ print $2 }' | tr "\n" " ")
     if [ -z "$tasks" ]; then
       >&2 echo "No rake tasks found! Are you in the correct directory?"
       return
     fi
-    echo "$gitroot: $tasks" >> ~/.heroku/completion-rake
+    echo "$gitroot: $tasks" >> "$fn"
   fi
-  cat ~/.heroku/completion-rake | grep "$gitroot:" | cut -d':' -f2-
+  cat "$fn" | grep "$gitroot:" | cut -d':' -f2-
+}
+
+_heroku_plugin_path() {
+  dirname "${BASH_SOURCE[0]}"
 }
 
 _heroku() {
@@ -138,6 +147,10 @@ _heroku() {
       ;;
     -a|--app)
       _heroku_complete "$(_heroku_apps)"
+      return 0
+      ;;
+    -n|--num)
+      _heroku_complete "1500"
       return 0
       ;;
     run)
@@ -162,7 +175,7 @@ _heroku() {
       return 0
       ;;
     plugins:update|plugins:uninstall)
-      local dir=$(dirname $( dirname "${BASH_SOURCE[0]}" ))
+      local dir=$(dirname $(_heroku_plugin_path))
       _heroku_complete "$(ls "$dir")"
       return 0
       ;;
@@ -178,7 +191,7 @@ _heroku() {
       return 0
     fi
     if [[ $prev =~ ^(-p|--ps)$ ]]; then
-      _heroku_complete "router web worker heroku-postgres"
+      _heroku_complete "api router web worker heroku-postgres"
       return 0
     elif [[ $cur =~ ^(-p) ]]; then
       _heroku_complete "-prouter -pweb -pworker -pheroku-postgres"
@@ -192,20 +205,21 @@ _heroku() {
     _heroku_complete "$(_heroku_apps_short)"
   elif [[ $cur =~ ^(-r) ]]; then
     _heroku_complete "$(_heroku_remotes_short)"
+  elif [[ $cur =~ ^(-n) ]]; then
+    _heroku_complete "-n1500"
   elif [[ $cur =~ ^($(_heroku_subcommands_regex)) ]]; then
-    # complete -o nospace
-    compopt +o nospace
+    # compopt +o nospace
     _heroku_complete "$(_heroku_commands)"
   elif [[ (($COMP_CWORD > 1)) && ${COMP_WORDS[1]} != help ]]; then
     _heroku_complete "$(_heroku_switches "${COMP_WORDS[1]}") -a --app -r --remote"
   else
-    compopt -o nospace #this will cause problems on mac I think?
+    # compopt -o nospace
     _heroku_complete "$(_heroku_main_commands)"
   fi
   __ltrim_colon_completions "$cur"
   return 0
 }
 
-# Use the first version if you prefer spaces to never be added
-# complete -o nospace -F _heroku heroku
-complete -F _heroku heroku
+# Swap this and uncomment the compopt lines above if you have compopt, e.g. on Linux.
+complete -o nospace -F _heroku heroku
+# complete -F _heroku heroku
