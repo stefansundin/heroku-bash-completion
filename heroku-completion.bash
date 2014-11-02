@@ -7,7 +7,7 @@
 
 # echo $COMP_WORDBREAKS
 # Mac: "'><=;|&(:
-# Linux:
+# Ubuntu: "'><;|&(:
 
 _heroku_complete() {
   COMPREPLY=( $( compgen -W "$1" -- "$cur" ))
